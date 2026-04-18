@@ -28,7 +28,7 @@ model = load_model()
 
 # --- APP LAYOUT ---
 st.title("🎓 Linear Regression Analysis Practise Assignment 1")
-st.title("🎓 Placement Strategy & Analysis Dashboard")
+
 
 
 tab1, tab2, tab3, tab4 = st.tabs([
@@ -38,37 +38,49 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "📂 Source Code"
 ])
 
-# --- TAB 1: PREDICTOR & GOAL SETTER ---
+# --- TAB 1: PREDICTOR & KEY METRICS ---
 with tab1:
+    st.header("Placement Package Predictor")
+    
+    # Top Row: Metrics
+    m1, m2, m3 = st.columns(3)
+    
+    # These values are pulled from your notebook's final analysis
+    m1.metric("Model Accuracy (R²)", "78%", help="78% of the package variation is explained by CGPA.")
+    m2.metric("Avg. Error (MAE)", "0.25 LPA", help="On average, predictions are off by 0.25 Lakhs per Annum.")
+    m3.metric("Dataset Size", "200 Students")
+
+    st.write("---")
+
+    # Bottom Row: Predictor and Goal Setter
     col_left, col_right = st.columns(2)
     
     with col_left:
-        st.header("Salary Predictor")
+        st.subheader("🚀 Quick Predictor")
         if model:
-            cgpa = st.slider("Your Current CGPA:", 0.0, 10.0, 7.5, 0.1)
+            cgpa = st.slider("Select Student CGPA:", 0.0, 10.0, 7.5, 0.1, key='main_cgpa')
             prediction = model.predict(np.array([[cgpa]]))[0]
-            st.metric("Estimated Package", f"{prediction:.2f} LPA")
+            st.success(f"### Predicted Package: {prediction:.2f} LPA")
             st.progress(cgpa / 10.0)
         else:
-            st.error("model.pkl missing.")
+            st.error("Model file not found.")
 
     with col_right:
-        st.header("🎯 Career Goal Setter")
+        st.subheader("🎯 Career Goal Setter")
         if model:
-            target_lpa = st.number_input("Enter your Target Package (LPA):", min_value=1.0, max_value=10.0, value=4.5, step=0.1)
+            target_lpa = st.number_input("Target Package (LPA):", 1.0, 10.0, 4.5, 0.1)
             
-            # Inverse Regression: CGPA = (Package - Intercept) / Slope
+            # Inverse Logic: CGPA = (Package - Intercept) / Slope
             m = model.coef_[0]
             b = model.intercept_
-            required_cgpa = (target_lpa - b) / m
+            req_cgpa = (target_lpa - b) / m
             
-            if required_cgpa > 10:
-                st.warning(f"Targeting {target_lpa} LPA would require a CGPA above 10.0 based on current trends.")
-            elif required_cgpa < 0:
-                st.success(f"A package of {target_lpa} LPA is very achievable with your current standing!")
+            if req_cgpa > 10:
+                st.warning(f"A {target_lpa} LPA package is statistically rare for this dataset (Requires >10 CGPA).")
+            elif req_cgpa < 0:
+                st.success(f"Goal achieved! {target_lpa} LPA is below the base prediction.")
             else:
-                st.subheader(f"Required CGPA: {required_cgpa:.2f}")
-                st.info(f"To reach your goal of {target_lpa} LPA, aim for a CGPA of at least {required_cgpa:.2f}.")
+                st.info(f"To reach **{target_lpa} LPA**, aim for a CGPA of **{req_cgpa:.2f}**")
 
 # --- TAB 2: REGRESSION ANALYSIS ---
 with tab2:
